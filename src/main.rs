@@ -71,10 +71,10 @@ fn main() {
         let mut rng = rand::thread_rng();
 
         let mut cpu = CPU::new();
-        cpu.load(SNAKE_GAME.to_vec());
         // Since program execution will start from whatever is in memory location 0xFFFC, we need
         // to set that to the start of the program. This snake game differs from other NES games
         // where execution starts at 0x8000.
+        cpu.load_at_addr(0x0600, SNAKE_GAME.to_vec());
         cpu.mem_write_u16(0xFFFC, 0x0600);
         // Send the reset signal to the CPU signaling that a cartridge has been inserted.
         cpu.reset();

@@ -71,11 +71,14 @@ impl CPU {
     }
 
     pub fn load(&mut self, program: Vec<u8>) {
+        self.load_at_addr(PC_OFFSET, program);
+        self.mem_write_u16(0xFFFC, PC_OFFSET);
+    }
+    pub fn load_at_addr(&mut self, addr: u16, program: Vec<u8>) {
         for (i, &byte) in program.iter().enumerate() {
-            self.memory[(PC_OFFSET as usize) + i] = byte;
+            self.memory[(addr as usize) + i] = byte;
         }
 
-        self.mem_write_u16(0xFFFC, PC_OFFSET);
     }
 
     /// When a cartridge was inserted into the NES, a reset signal was sent to the CPU. This
