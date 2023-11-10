@@ -1017,12 +1017,6 @@ mod tests {
 
     #[test]
     #[ignore]
-    fn test_bit_absolute() {
-        todo!();
-    }
-
-    #[test]
-    #[ignore]
     fn test_bmi_negative_set() {
         todo!()
     }
