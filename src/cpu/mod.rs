@@ -83,6 +83,11 @@ impl CPU {
 
     /// When a cartridge was inserted into the NES, a reset signal was sent to the CPU. This
     /// function emulates that reset signal.
+    ///
+    /// This functions:
+    /// * Sets the registers to 0
+    /// * Sets the status flags to 0
+    /// * Sets the program counter to the address stored at 0xFFFC
     pub fn reset(&mut self) {
         self.reg_a = 0;
         self.reg_x = 0;
