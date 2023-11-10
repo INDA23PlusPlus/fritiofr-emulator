@@ -620,12 +620,7 @@ impl CPU {
         let addr = self.get_op_addr(&addr_mode);
         let value = self.mem_read(addr);
 
-        let result = self.reg_a & value == 0;
-        if result {
-            self.status.insert(StatusFlags::ZERO);
-        } else {
-            self.status.remove(StatusFlags::ZERO);
-        }
+        let result = self.reg_a & value;
 
         if value & 0b0100_0000 != 0 {
             self.status.insert(StatusFlags::OVERFLOW);
@@ -633,11 +628,7 @@ impl CPU {
             self.status.remove(StatusFlags::OVERFLOW);
         }
 
-        if value & 0b1000_0000 != 0 {
-            self.status.insert(StatusFlags::NEGATIVE);
-        } else {
-            self.status.remove(StatusFlags::NEGATIVE);
-        }
+        self.update_zero_and_negative_flags(result);
     }
 
     fn branch(&mut self, condition: bool) {
@@ -898,6 +889,51 @@ mod tests {
         assert_eq!(cpu.reg_a, 0b11011010);
         assert!(!cpu.status.contains(StatusFlags::ZERO));
         assert!(cpu.status.contains(StatusFlags::NEGATIVE));
+    }
+
+    #[test]
+    fn test_bit_absolute_negative_set() {
+        let mut cpu = CPU::new();
+        cpu.load(vec![op_codes::BIT_ABSOLUTE, 0x10, op_codes::BRK]);
+        cpu.reset();
+        cpu.mem_write(0x10, 0b10101101);
+        cpu.reg_a = 0b11101101;
+        cpu.run();
+
+        assert_eq!(cpu.reg_a, 0b11101101);
+        assert!(!cpu.status.contains(StatusFlags::ZERO));
+        assert!(cpu.status.contains(StatusFlags::NEGATIVE));
+        assert!(!cpu.status.contains(StatusFlags::OVERFLOW));
+    }
+
+    #[test]
+    fn test_bit_absolute_zero_set() {
+        let mut cpu = CPU::new();
+        cpu.load(vec![op_codes::BIT_ABSOLUTE, 0x10, op_codes::BRK]);
+        cpu.reset();
+        cpu.mem_write(0x10, 0b00000000);
+        cpu.reg_a = 0b11101101;
+        cpu.run();
+
+        assert_eq!(cpu.reg_a, 0b11101101);
+        assert!(cpu.status.contains(StatusFlags::ZERO));
+        assert!(!cpu.status.contains(StatusFlags::NEGATIVE));
+        assert!(!cpu.status.contains(StatusFlags::OVERFLOW));
+    }
+
+    #[test]
+    fn test_bit_absolute_overflow_set() {
+        let mut cpu = CPU::new();
+        cpu.load(vec![op_codes::BIT_ABSOLUTE, 0x10, op_codes::BRK]);
+        cpu.reset();
+        cpu.mem_write(0x10, 0b01101101);
+        cpu.reg_a = 0b11101101;
+        cpu.run();
+
+        assert_eq!(cpu.reg_a, 0b11101101);
+        assert!(!cpu.status.contains(StatusFlags::ZERO));
+        assert!(!cpu.status.contains(StatusFlags::NEGATIVE));
+        assert!(cpu.status.contains(StatusFlags::OVERFLOW));
     }
 
     #[test]
